@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REACH 2026 · Calendario Global</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap');
+
+  :root {
+    --teal:        #0E7C7B;
+    --teal-dark:   #065A5A;
+    --teal-light:  #D6EFEF;
+    --teal-xlight: #EEF7F7;
+    --amber:       #F5A623;
+    --amber-light: #FEF3DC;
+    --violet:      #7C3AED;
+    --violet-light:#EDE9FE;
+    --charcoal:    #2D2D2D;
+    --muted:       #6B7280;
+    --bg:          #F4F8F8;
+    --white:       #ffffff;
+    --border:      #D1E8E8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--charcoal);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--teal-dark);
+    padding: 2rem 2rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, #0E7C7B55 0%, transparent 70%);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--amber), #FFC86A, var(--amber));
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .header-tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #B2DFDF;
+    margin-bottom: 0.4rem;
+  }
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: white;
+    line-height: 1.1;
+  }
+  h1 em {
+    color: var(--amber);
+    font-style: italic;
+  }
+  .header-sub {
+    color: #B2DFDF;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    max-width: 1100px;
+    margin: 1.5rem auto 0;
+    padding: 0 1rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .legend-label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Filters ── */
+  .controls {
+    max-width: 1100px;
+    margin: 1.2rem auto 0;
+    padding: 0 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .controls-label { font-size: 0.8rem; color: var(--muted); }
+  .filter-btn {
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--teal); color: var(--teal); }
+  .filter-btn.active { background: var(--teal-dark); border-color: var(--teal-dark); color: white; }
+
+  /* ── Main grid ── */
+  main {
+    max-width: 1100px;
+    margin: 1.5rem auto 3rem;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+
+  /* ── Month card ── */
+  .month-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 1px 4px #0E7C7B0A;
+    transition: box-shadow 0.2s;
+  }
+  .month-card:hover { box-shadow: 0 4px 16px #0E7C7B18; }
+  .month-header {
+    background: var(--teal-dark);
+    padding: 0.85rem 1.2rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .month-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    color: white;
+  }
+  .month-count {
+    font-size: 0.75rem;
+    color: #B2DFDF;
+    margin-left: auto;
+  }
+
+  /* ── Event list ── */
+  .event-list { padding: 0.6rem 0; }
+  .event-item {
+    display: grid;
+    grid-template-columns: 2.8rem 1fr;
+    gap: 0;
+    padding: 0.55rem 1.2rem;
+    border-left: 3px solid transparent;
+    transition: background 0.12s;
+    cursor: pointer;
+  }
+  .event-item:hover { background: var(--teal-xlight); }
+  .event-item.type-idipron    { border-left-color: var(--teal); }
+  .event-item.type-share      { border-left-color: var(--amber); }
+  .event-item.type-bienvenida { border-left-color: var(--violet); }
+
+  .event-day {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--teal-dark);
+    padding-top: 0.05rem;
+  }
+  .event-right { min-width: 0; }
+  .event-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .event-groups {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .event-pill {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+  }
+  .pill-idipron    { background: var(--teal-light); color: var(--teal-dark); }
+  .pill-share      { background: var(--amber-light); color: #92400e; }
+  .pill-bienvenida { background: var(--violet-light); color: #5b21b6; }
+
+  .no-events {
+    padding: 1rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* ── Modal / Detail ── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 90, 90, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: white;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(6,90,90,0.25);
+    transform: translateY(12px);
+    transition: transform 0.2s;
+  }
+  .overlay.open .modal { transform: translateY(0); }
+  .modal-header {
+    padding: 1.4rem 1.5rem 1rem;
+    background: var(--teal-dark);
+    border-radius: 18px 18px 0 0;
+    position: relative;
+  }
+  .modal-date {
+    font-size: 0.78rem;
+    color: #B2DFDF;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .modal-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: white;
+    line-height: 1.2;
+  }
+  .modal-close {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.3); }
+  .modal-body { padding: 1.2rem 1.5rem 1.5rem; }
+
+  .modal-group {
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+    background: var(--teal-xlight);
+    border-radius: 10px;
+    border-left: 3px solid var(--teal);
+  }
+  .modal-group-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--teal-dark);
+    margin-bottom: 0.4rem;
+  }
+  .modal-role-row {
+    font-size: 0.84rem;
+    color: var(--charcoal);
+    margin-bottom: 0.2rem;
+    display: flex;
+    gap: 0.4rem;
+  }
+  .modal-role-label {
+    font-weight: 600;
+    color: var(--teal-dark);
+    min-width: 90px;
+    flex-shrink: 0;
+  }
+  .modal-topic {
+    font-size: 0.84rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    font-style: italic;
+  }
+
+  .modal-section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+    padding-top: 0.2rem;
+  }
+
+  /* ── Stats strip ── */
+  .stats {
+    max-width: 1100px;
+    margin: 0 auto 1rem;
+    padding: 0 1rem;
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .stat-pill strong { color: var(--teal-dark); font-size: 1rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-tag">Programa 2026 · IDIPRON · New Breath</div>
+    <h1>REACH <em>2026</em></h1>
+    <div class="header-sub">Calendario global de actividades para líderes y coordinadores</div>
+  </div>
+</header>
+
+<div class="legend" style="margin-top:1.2rem;">
+  <span class="legend-label">Referencias:</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>IDIPRON</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Activación SHARE</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--violet)"></span>Bienvenida de nuevos</span>
+</div>
+
+<div class="controls">
+  <span class="controls-label">Filtrar:</span>
+  <button class="filter-btn active" data-filter="all">Todos</button>
+  <button class="filter-btn" data-filter="idipron">IDIPRON</button>
+  <button class="filter-btn" data-filter="share">Activación SHARE</button>
+  <button class="filter-btn" data-filter="bienvenida">Bienvenida</button>
+</div>
+
+<div class="stats" id="stats"></div>
+<main id="calendar-grid"></main>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-date" id="modal-date"></div>
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ── Raw data ─────────────────────────────────────────────────────────────────
+const rawEvents = [
+  // Mateo G y Anita T
+  {date:"2026-05-16", group:"Mateo G y Anita T",   activity:"IDIPRON SERVITA",        topic:"Nunca estás solo",                  rompehielos:"Emma R y Samu I",    actividad_r:"Fabian B y Anngie M", mensaje:"Danna y Anita T"},
+  {date:"2026-06-05", group:"Mateo G y Anita T",   activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-07-19", group:"Mateo G y Anita T",   activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-08-22", group:"Mateo G y Anita T",   activity:"IDIPRON LA 27",          topic:"Sanar lo que pasó",                 rompehielos:"Danna C",            actividad_r:"Mate Bastilla",       mensaje:"Ana T"},
+  {date:"2026-10-03", group:"Mateo G y Anita T",   activity:"IDIPRON LA 27",          topic:"Elegir lo correcto",                rompehielos:"Samu I",             actividad_r:"Danna C",             mensaje:"Mate G"},
+  {date:"2026-12-06", group:"Mateo G y Anita T",   activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  // Anngie M y David
+  {date:"2026-05-16", group:"Anngie M y David",    activity:"IDIPRON SERVITA",        topic:"Nunca estás solo",                  rompehielos:"Emma R y Samu I",    actividad_r:"Fabian B y Anngie M", mensaje:"Danna y Anita T"},
+  {date:"2026-06-13", group:"Anngie M y David",    activity:"IDIPRON LA 27",          topic:"Soltar el enojo",                   rompehielos:"David E",            actividad_r:"Gabriela C",          mensaje:"Anngie M"},
+  {date:"2026-07-04", group:"Anngie M y David",    activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-09-05", group:"Anngie M y David",    activity:"IDIPRON LA 27",          topic:"Cambios desde adentro",             rompehielos:"Mariam",             actividad_r:"Mapis A",             mensaje:"David E"},
+  {date:"2026-10-03", group:"Anngie M y David",    activity:"IDIPRON LA 27",          topic:"Elegir lo correcto",                rompehielos:"Samu I",             actividad_r:"Danna C",             mensaje:"Mate G"},
+  {date:"2026-11-29", group:"Anngie M y David",    activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-12-27", group:"Anngie M y David",    activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  // Fabi B y Karla C
+  {date:"2026-05-16", group:"Fabi B y Karla C",    activity:"IDIPRON SERVITA",        topic:"Nunca estás solo",                  rompehielos:"Emma R y Samu I",    actividad_r:"Fabian B y Anngie M", mensaje:"Danna y Anita T"},
+  {date:"2026-06-13", group:"Fabi B y Karla C",    activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-07-11", group:"Fabi B y Karla C",    activity:"IDIPRON LA 27",          topic:"Hablar y ser escuchado",            rompehielos:"Checho U",           actividad_r:"Cami O",              mensaje:"Fabi B"},
+  {date:"2026-09-20", group:"Fabi B y Karla C",    activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-10-31", group:"Fabi B y Karla C",    activity:"IDIPRON SERVITA",        topic:"Sanar hoy",                         rompehielos:"Jonathan",           actividad_r:"Johan C",             mensaje:"Diana M"},
+  {date:"2026-11-14", group:"Fabi B y Karla C",    activity:"IDIPRON LA 27",          topic:"Lo bueno que hay en ti",            rompehielos:"Mayerly Ramirez",    actividad_r:"Juan Sanchez",        mensaje:"Karla C"},
+  {date:"2026-12-13", group:"Fabi B y Karla C",    activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  // Naty B
+  {date:"2026-05-16", group:"Naty B",              activity:"IDIPRON LA 27",          topic:"Nunca estás solo",                  rompehielos:"Dani Moreno",        actividad_r:"Andre S",             mensaje:"Alejo C"},
+  {date:"2026-06-13", group:"Naty B",              activity:"IDIPRON SERVITA",        topic:"Soltar el enojo",                   rompehielos:"Fer",                actividad_r:"Cami O",              mensaje:"Nati B"},
+  {date:"2026-07-24", group:"Naty B",              activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-08-30", group:"Naty B",              activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-09-27", group:"Naty B",              activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-10-17", group:"Naty B",              activity:"IDIPRON LA 27",          topic:"Acercarte más cada día",            rompehielos:"Lau L",              actividad_r:"Andre S",             mensaje:"Mario S"},
+  {date:"2026-11-28", group:"Naty B",              activity:"IDIPRON LA 27",          topic:"No rendirse",                       rompehielos:"Camila S",           actividad_r:"Nati B",              mensaje:"Alejo C"},
+  // Cami O y Aleja Carrillo
+  {date:"2026-06-13", group:"Cami O y Aleja Carrillo", activity:"IDIPRON SERVITA",   topic:"Soltar el enojo",                   rompehielos:"Fer",                actividad_r:"Cami O",              mensaje:"Nati B"},
+  {date:"2026-07-11", group:"Cami O y Aleja Carrillo", activity:"IDIPRON LA 27",     topic:"Hablar y ser escuchado",            rompehielos:"Checho U",           actividad_r:"Cami O",              mensaje:"Fabi B"},
+  {date:"2026-08-09", group:"Cami O y Aleja Carrillo", activity:"Bienvenida de nuevos", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-09-19", group:"Cami O y Aleja Carrillo", activity:"IDIPRON LA 27",     topic:"Dar cosas buenas a otros",          rompehielos:"Caro G",             actividad_r:"Fer",                 mensaje:"Aleja Carrillo"},
+  {date:"2026-10-10", group:"Cami O y Aleja Carrillo", activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-11-01", group:"Cami O y Aleja Carrillo", activity:"Bienvenida de nuevos", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-12-19", group:"Cami O y Aleja Carrillo", activity:"IDIPRON SERVITA",   topic:"Amar y perdonar cada día",          rompehielos:"Cami O",             actividad_r:"Pipe G",              mensaje:"Fer"},
+  // Nico P y Cata R
+  {date:"2026-05-08", group:"Nico P y Cata R",     activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-06-27", group:"Nico P y Cata R",     activity:"IDIPRON LA 27",          topic:"Una nueva forma de verte",          rompehielos:"Nico P",             actividad_r:"Aleja Cruz",          mensaje:"Dani Martinez"},
+  {date:"2026-07-11", group:"Nico P y Cata R",     activity:"IDIPRON SERVITA",        topic:"Hablar y ser escuchado",            rompehielos:"Nico P",             actividad_r:"Cata R",              mensaje:"Cata C"},
+  {date:"2026-09-05", group:"Nico P y Cata R",     activity:"IDIPRON SERVITA",        topic:"Cambios desde adentro",             rompehielos:"Nata C",             actividad_r:"Cami T",              mensaje:"Santi O"},
+  {date:"2026-10-04", group:"Nico P y Cata R",     activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-11-22", group:"Nico P y Cata R",     activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  // Andy B y Ange C
+  {date:"2026-05-16", group:"Andy B y Ange C",     activity:"IDIPRON LA 27",          topic:"Nunca estás solo",                  rompehielos:"Dani Moreno",        actividad_r:"Andre S",             mensaje:"Alejo C"},
+  {date:"2026-06-14", group:"Andy B y Ange C",     activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-07-11", group:"Andy B y Ange C",     activity:"IDIPRON SERVITA",        topic:"Hablar y ser escuchado",            rompehielos:"Nico P",             actividad_r:"Cata R",              mensaje:"Cata C"},
+  {date:"2026-08-08", group:"Andy B y Ange C",     activity:"IDIPRON LA 27",          topic:"Agradecer aun en días difíciles",   rompehielos:"Ange C",             actividad_r:"Cami S",              mensaje:"Andy B"},
+  {date:"2026-09-04", group:"Andy B y Ange C",     activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-10-31", group:"Andy B y Ange C",     activity:"IDIPRON LA 27",          topic:"Sanar hoy",                         rompehielos:"Javier",             actividad_r:"Ange C",              mensaje:"Cata C"},
+  {date:"2026-12-20", group:"Andy B y Ange C",     activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  // Dani Moreno y Andre S
+  {date:"2026-05-16", group:"Dani Moreno y Andre S", activity:"IDIPRON LA 27",        topic:"Nunca estás solo",                  rompehielos:"Dani Moreno",        actividad_r:"Andre S",             mensaje:"Alejo C"},
+  {date:"2026-07-12", group:"Dani Moreno y Andre S", activity:"Bienvenida de nuevos", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-08-08", group:"Dani Moreno y Andre S", activity:"IDIPRON SERVITA",      topic:"Agradecer aun en días difíciles",   rompehielos:"Mario S",            actividad_r:"Pau B",               mensaje:"Gabriela C"},
+  {date:"2026-09-26", group:"Dani Moreno y Andre S", activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-10-17", group:"Dani Moreno y Andre S", activity:"IDIPRON LA 27",        topic:"Acercarte más cada día",            rompehielos:"Lau L",              actividad_r:"Andre.S",             mensaje:"Mario S"},
+  {date:"2026-11-08", group:"Dani Moreno y Andre S", activity:"Bienvenida de nuevos", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-12-19", group:"Dani Moreno y Andre S", activity:"IDIPRON LA 27",        topic:"Amar y perdonar cada día",          rompehielos:"Gabriela C",         actividad_r:"Mario S",             mensaje:"Dani Moreno"},
+  // Pau B y Matt L
+  {date:"2026-05-22", group:"Pau B y Matt L",      activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-06-13", group:"Pau B y Matt L",      activity:"IDIPRON LA 27",          topic:"Soltar el enojo",                   rompehielos:"David E",            actividad_r:"Gabriela C",          mensaje:"Anngie M"},
+  {date:"2026-08-08", group:"Pau B y Matt L",      activity:"IDIPRON SERVITA",        topic:"Agradecer aun en días difíciles",   rompehielos:"Mario S",            actividad_r:"Pau B",               mensaje:"Gabriela C"},
+  {date:"2026-09-06", group:"Pau B y Matt L",      activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-10-25", group:"Pau B y Matt L",      activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-11-28", group:"Pau B y Matt L",      activity:"IDIPRON SERVITA",        topic:"No rendirse",                       rompehielos:"Dani Martinez",      actividad_r:"Aleja Cruz",          mensaje:"Pau B"},
+  {date:"2026-12-19", group:"Pau B y Matt L",      activity:"IDIPRON LA 27",          topic:"Amar y perdonar cada día",          rompehielos:"Gabriela C",         actividad_r:"Mario S",             mensaje:"Dani Moreno"},
+  // Pipe G y Mapis A
+  {date:"2026-05-31", group:"Pipe G y Mapis A",    activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-06-20", group:"Pipe G y Mapis A",    activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-07-25", group:"Pipe G y Mapis A",    activity:"IDIPRON LA 27",          topic:"Creer que puede cambiar",           rompehielos:"Juanfe",             actividad_r:"Javier",              mensaje:"Pipe G"},
+  {date:"2026-09-05", group:"Pipe G y Mapis A",    activity:"IDIPRON LA 27",          topic:"Cambios desde adentro",             rompehielos:"Mariam",             actividad_r:"Mapis A",             mensaje:"David E"},
+  {date:"2026-10-31", group:"Pipe G y Mapis A",    activity:"IDIPRON LA 27",          topic:"Sanar hoy",                         rompehielos:"Javier",             actividad_r:"Ange C",              mensaje:"Cata C"},
+  {date:"2026-11-15", group:"Pipe G y Mapis A",    activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-12-19", group:"Pipe G y Mapis A",    activity:"IDIPRON SERVITA",        topic:"Amar y perdonar cada día",          rompehielos:"Cami O",             actividad_r:"Pipe G",              mensaje:"Fer"},
+  // Santi O y Cami T
+  {date:"2026-05-24", group:"Santi O y Cami T",    activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-06-07", group:"Santi O y Cami T",    activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-07-25", group:"Santi O y Cami T",    activity:"IDIPRON LA 27",          topic:"Creer que puede cambiar",           rompehielos:"Juanfe",             actividad_r:"Javier",              mensaje:"Pipe G"},
+  {date:"2026-09-05", group:"Santi O y Cami T",    activity:"IDIPRON SERVITA",        topic:"Cambios desde adentro",             rompehielos:"Nata C",             actividad_r:"Cami T",              mensaje:"Santi O"},
+  {date:"2026-10-03", group:"Santi O y Cami T",    activity:"IDIPRON SERVITA",        topic:"Elegir lo correcto",                rompehielos:"Mate Beltran",       actividad_r:"Pablo V",             mensaje:"Juanfe B"},
+  {date:"2026-11-06", group:"Santi O y Cami T",    activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-12-12", group:"Santi O y Cami T",    activity:"IDIPRON LA 27",          topic:"Encontrar dirección",               rompehielos:"Cami T",             actividad_r:"Caro G",              mensaje:"Nata C"},
+  // Pablo V y Cami S
+  {date:"2026-05-30", group:"Pablo V y Cami S",    activity:"IDIPRON LA 27",          topic:"Abrir el corazón",                  rompehielos:"Pablo V",            actividad_r:"Johan C",             mensaje:"Ana F"},
+  {date:"2026-06-28", group:"Pablo V y Cami S",    activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-07-17", group:"Pablo V y Cami S",    activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-08-08", group:"Pablo V y Cami S",    activity:"IDIPRON LA 27",          topic:"Agradecer aun en días difíciles",   rompehielos:"Ange C",             actividad_r:"Cami S",              mensaje:"Andy B"},
+  {date:"2026-09-13", group:"Pablo V y Cami S",    activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-10-03", group:"Pablo V y Cami S",    activity:"IDIPRON SERVITA",        topic:"Elegir lo correcto",                rompehielos:"Mate Beltran",       actividad_r:"Pablo V",             mensaje:"Juanfe B"},
+  {date:"2026-11-28", group:"Pablo V y Cami S",    activity:"IDIPRON LA 27",          topic:"No rendirse",                       rompehielos:"Camila S",           actividad_r:"Nati B",              mensaje:"Alejo C"},
+  // Johan C y Lau S
+  {date:"2026-05-30", group:"Johan C y Lau S",     activity:"IDIPRON LA 27",          topic:"Abrir el corazón",                  rompehielos:"Pablo V",            actividad_r:"Johan C",             mensaje:"Ana F"},
+  {date:"2026-06-21", group:"Johan C y Lau S",     activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-07-05", group:"Johan C y Lau S",     activity:"Bienvenida de nuevos",   topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-08-01", group:"Johan C y Lau S",     activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-08-22", group:"Johan C y Lau S",     activity:"IDIPRON LA 27",          topic:"Sanar lo que pasó",                 rompehielos:"Danna C",            actividad_r:"Mate Bastilla",       mensaje:"Ana T"},
+  {date:"2026-10-31", group:"Johan C y Lau S",     activity:"IDIPRON SERVITA",        topic:"Sanar hoy",                         rompehielos:"Jonathan",           actividad_r:"Johan C",             mensaje:"Diana M"},
+  {date:"2026-11-14", group:"Johan C y Lau S",     activity:"IDIPRON LA 27",          topic:"Lo bueno que hay en ti",            rompehielos:"Mayerly Ramirez",    actividad_r:"Juan Sanchez",        mensaje:"Karla C"},
+  // Dani Martínez y Aleja Cruz
+  {date:"2026-06-27", group:"Dani Martínez y Aleja Cruz", activity:"IDIPRON LA 27",  topic:"Una nueva forma de verte",          rompehielos:"Nico P",             actividad_r:"Aleja Cruz",          mensaje:"Dani Martinez"},
+  {date:"2026-07-26", group:"Dani Martínez y Aleja Cruz", activity:"Bienvenida de nuevos", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-08-28", group:"Dani Martínez y Aleja Cruz", activity:"Activación evangelismo SHARE", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-09-19", group:"Dani Martínez y Aleja Cruz", activity:"IDIPRON LA 27",  topic:"Dar cosas buenas a otros",          rompehielos:"Caro G",             actividad_r:"Fer",                 mensaje:"Aleja Carrillo"},
+  {date:"2026-10-18", group:"Dani Martínez y Aleja Cruz", activity:"Bienvenida de nuevos", topic:"", rompehielos:"", actividad_r:"", mensaje:""},
+  {date:"2026-11-28", group:"Dani Martínez y Aleja Cruz", activity:"IDIPRON SERVITA", topic:"No rendirse",                      rompehielos:"Dani Martinez",      actividad_r:"Aleja Cruz",          mensaje:"Pau B"},
+  {date:"2026-12-12", group:"Dani Martínez y Aleja Cruz", activity:"IDIPRON LA 27",  topic:"Encontrar dirección",               rompehielos:"Cami T",             actividad_r:"Caro G",              mensaje:"Nata C"},
+];
+
+// ── Classify events ───────────────────────────────────────────────────────────
+function classify(ev) {
+  if (ev.activity.includes("Bienvenida")) return "bienvenida";
+  if (ev.activity.includes("SHARE"))      return "share";
+  return "idipron";
+}
+
+// ── Group by date → deduplicate unique activities ────────────────────────────
+// Build date-keyed map of {activity, groups[], detail}
+const dateMap = {};
+rawEvents.forEach(ev => {
+  if (!dateMap[ev.date]) dateMap[ev.date] = [];
+  dateMap[ev.date].push(ev);
+});
+
+// Build unified events: one entry per (date, activity_key)
+const unifiedEvents = [];
+Object.keys(dateMap).sort().forEach(date => {
+  const evs = dateMap[date];
+  // group by activity
+  const actMap = {};
+  evs.forEach(ev => {
+    const key = ev.activity;
+    if (!actMap[key]) actMap[key] = { activity: ev.activity, groups: [], detail: [], date };
+    actMap[key].groups.push(ev.group);
+    if (ev.topic) actMap[key].detail.push(ev);
+  });
+  Object.values(actMap).forEach(agg => unifiedEvents.push(agg));
+});
+
+// ── Month grouping ────────────────────────────────────────────────────────────
+const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+const monthMap = {};
+for (let m = 5; m <= 12; m++) {  // May–Dec
+  monthMap[m] = [];
+}
+unifiedEvents.forEach(agg => {
+  const month = parseInt(agg.date.split("-")[1]);
+  if (monthMap[month]) monthMap[month].push(agg);
+});
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+let activeFilter = "all";
+
+function countTotal(filter) {
+  return unifiedEvents.filter(e => filter === "all" || classify(e) === filter).length;
+}
+
+function renderStats() {
+  const statsEl = document.getElementById("stats");
+  const total = rawEvents.length;
+  const idipron = rawEvents.filter(e => classify(e) === "idipron").length;
+  const share = rawEvents.filter(e => classify(e) === "share").length;
+  const bienvenida = rawEvents.filter(e => classify(e) === "bienvenida").length;
+  statsEl.innerHTML = `
+    <div class="stat-pill"><strong>${total}</strong> actividades totales</div>
+    <div class="stat-pill"><strong>14</strong> grupos</div>
+    <div class="stat-pill"><strong>${idipron}</strong> visitas IDIPRON</div>
+    <div class="stat-pill"><strong>${share}</strong> activaciones SHARE</div>
+    <div class="stat-pill"><strong>${bienvenida}</strong> bienvenidas</div>
+  `;
+}
+
+// ── Format date for display ───────────────────────────────────────────────────
+function fmtDate(dateStr) {
+  const [y, m, d] = dateStr.split("-");
+  return `${parseInt(d)} ${MONTHS[parseInt(m)-1]} ${y}`;
+}
+
+function fmtDay(dateStr) {
+  return parseInt(dateStr.split("-")[2]);
+}
+
+// ── Render calendar ───────────────────────────────────────────────────────────
+function renderCalendar() {
+  const grid = document.getElementById("calendar-grid");
+  grid.innerHTML = "";
+
+  for (let m = 5; m <= 12; m++) {
+    const events = monthMap[m].filter(e => {
+      if (activeFilter === "all") return true;
+      return classify(e) === activeFilter;
+    }).sort((a,b) => a.date.localeCompare(b.date));
+
+    const card = document.createElement("div");
+    card.className = "month-card";
+
+    const monthLabel = MONTHS[m-1];
+    card.innerHTML = `
+      <div class="month-header">
+        <div class="month-name">${monthLabel} 2026</div>
+        <div class="month-count">${events.length} ${events.length === 1 ? "evento" : "eventos"}</div>
+      </div>
+      <div class="event-list" id="list-${m}"></div>
+    `;
+    grid.appendChild(card);
+
+    const list = card.querySelector(`#list-${m}`);
+    if (events.length === 0) {
+      list.innerHTML = `<div class="no-events">Sin actividades este mes con el filtro actual.</div>`;
+    } else {
+      events.forEach(agg => {
+        const type = classify(agg);
+        const item = document.createElement("div");
+        item.className = `event-item type-${type}`;
+
+        let pillHtml = "";
+        if (agg.activity.includes("SERVITA")) pillHtml = `<span class="event-pill pill-idipron">SERVITA</span>`;
+        else if (agg.activity.includes("LA 27")) pillHtml = `<span class="event-pill pill-idipron">LA 27</span>`;
+        else if (type === "share") pillHtml = `<span class="event-pill pill-share">SHARE</span>`;
+        else if (type === "bienvenida") pillHtml = `<span class="event-pill pill-bienvenida">Nuevos</span>`;
+
+        // determine display title
+        let title = agg.activity;
+        if (type === "idipron") title = "Visita IDIPRON";
+        else if (type === "share") title = "Activación Evangelismo";
+        else title = "Bienvenida de Nuevos";
+
+        item.innerHTML = `
+          <div class="event-day">${fmtDay(agg.date)}</div>
+          <div class="event-right">
+            <div class="event-title">${title}${pillHtml}</div>
+            <div class="event-groups">${agg.groups.slice(0,3).join(" · ")}${agg.groups.length > 3 ? ` +${agg.groups.length-3} más` : ""}</div>
+          </div>
+        `;
+        item.addEventListener("click", () => openModal(agg));
+        list.appendChild(item);
+      });
+    }
+  }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(agg) {
+  const overlay = document.getElementById("overlay");
+  document.getElementById("modal-date").textContent = fmtDate(agg.date).toUpperCase();
+
+  let typeLabel = agg.activity;
+  if (classify(agg) === "idipron") typeLabel = "Visita IDIPRON · " + (agg.activity.includes("SERVITA") ? "SERVITA" : "LA 27");
+  else if (classify(agg) === "share") typeLabel = "Activación Evangelismo SHARE";
+  else typeLabel = "Bienvenida de Nuevos";
+
+  document.getElementById("modal-title").textContent = typeLabel;
+
+  const body = document.getElementById("modal-body");
+  const type = classify(agg);
+
+  if (type === "idipron" && agg.detail.length > 0) {
+    // Find unique topics
+    const uniqueTopics = [...new Set(agg.detail.map(d => d.topic).filter(Boolean))];
+
+    let html = "";
+
+    // Per-group detail
+    html += `<div class="modal-section-label">Grupos participantes</div>`;
+    agg.detail.forEach(d => {
+      html += `
+        <div class="modal-group">
+          <div class="modal-group-name">👥 ${d.group}</div>
+          ${d.topic ? `<div class="modal-topic">📖 ${d.topic}</div>` : ""}
+          ${d.rompehielos ? `<div class="modal-role-row"><span class="modal-role-label">Rompehielos:</span><span>${d.rompehielos}</span></div>` : ""}
+          ${d.actividad_r ? `<div class="modal-role-row"><span class="modal-role-label">Actividad:</span><span>${d.actividad_r}</span></div>` : ""}
+          ${d.mensaje ? `<div class="modal-role-row"><span class="modal-role-label">Mensaje:</span><span>${d.mensaje}</span></div>` : ""}
+        </div>
+      `;
+    });
+    body.innerHTML = html;
+  } else {
+    // Simple list
+    let html = `<div class="modal-section-label">Grupos participantes (${agg.groups.length})</div>`;
+    agg.groups.forEach(g => {
+      html += `<div class="modal-group"><div class="modal-group-name">👥 ${g}</div></div>`;
+    });
+    body.innerHTML = html;
+  }
+
+  overlay.classList.add("open");
+}
+
+document.getElementById("modal-close").addEventListener("click", () => {
+  document.getElementById("overlay").classList.remove("open");
+});
+document.getElementById("overlay").addEventListener("click", e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove("open");
+});
+
+// ── Filter buttons ────────────────────────────────────────────────────────────
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter = btn.dataset.filter;
+    renderCalendar();
+  });
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderStats();
+renderCalendar();
+</script>
+</body>
+</html>
