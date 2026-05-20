@@ -161,6 +161,93 @@
   .modal-section-label { font-size:.7rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:.5rem; }
 
   .hidden { display:none !important; }
+
+  /* ── Group filter ── */
+  .group-filter-wrap {
+    max-width:1100px; margin:.6rem auto 0; padding:0 1rem;
+    display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;
+  }
+  .group-filter-label { font-size:.76rem; color:var(--muted); white-space:nowrap; }
+
+  .group-select-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .3rem .85rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-family: inherit;
+    font-size: .78rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--charcoal);
+    transition: all .15s;
+    user-select: none;
+  }
+  .group-select-btn:hover { border-color: var(--teal); color: var(--teal); }
+  .group-select-btn.has-selection { background: var(--teal-dark); border-color: var(--teal-dark); color: white; }
+  .group-select-btn svg { flex-shrink: 0; transition: transform .2s; }
+  .group-select-btn.open svg { transform: rotate(180deg); }
+
+  .group-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 50;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(6,90,90,.15);
+    min-width: 230px;
+    max-height: 340px;
+    overflow-y: auto;
+    display: none;
+    padding: .4rem 0;
+  }
+  .group-dropdown.open { display: block; }
+
+  .group-dropdown-search {
+    display: flex; align-items: center; gap: .4rem;
+    padding: .45rem .75rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: .25rem;
+  }
+  .group-dropdown-search input {
+    border: none; outline: none; font-family: inherit;
+    font-size: .78rem; color: var(--charcoal); width: 100%;
+    background: transparent;
+  }
+  .group-dropdown-search input::placeholder { color: var(--muted); }
+
+  .group-option {
+    display: flex; align-items: center; gap: .55rem;
+    padding: .38rem .85rem;
+    font-size: .8rem;
+    cursor: pointer;
+    transition: background .1s;
+    color: var(--charcoal);
+  }
+  .group-option:hover { background: var(--teal-xlight); }
+  .group-option input[type=checkbox] { accent-color: var(--teal); width: 14px; height: 14px; flex-shrink: 0; }
+  .group-option.all-option { font-weight: 600; color: var(--teal-dark); border-bottom: 1px solid var(--border); margin-bottom: .2rem; padding-bottom: .5rem; }
+
+  .group-clear-btn {
+    padding: .28rem .75rem;
+    border-radius: 999px;
+    border: 1.5px solid #FECACA;
+    background: white;
+    font-family: inherit;
+    font-size: .74rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: #B91C1C;
+    transition: all .15s;
+    display: none;
+  }
+  .group-clear-btn:hover { background: #FEF2F2; }
+  .group-clear-btn.visible { display: inline-block; }
 </style>
 </head>
 <body>
@@ -198,6 +285,25 @@
   <button class="filter-btn" data-filter="idipron">IDIPRON</button>
   <button class="filter-btn" data-filter="share">Activación SHARE</button>
   <button class="filter-btn" data-filter="bienvenida">Bienvenida</button>
+</div>
+
+<!-- Group filter -->
+<div class="group-filter-wrap">
+  <span class="group-filter-label">Grupo:</span>
+  <div style="position:relative">
+    <button class="group-select-btn" id="group-select-btn" onclick="toggleGroupDropdown(event)">
+      <span id="group-btn-label">Todos los grupos</span>
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="group-dropdown" id="group-dropdown">
+      <div class="group-dropdown-search">
+        <svg width="13" height="13" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Buscar grupo2026" id="group-search" oninput="filterGroupOptions()" autocomplete="off">
+      </div>
+      <div id="group-options"></div>
+    </div>
+  </div>
+  <button class="group-clear-btn" id="group-clear-btn" onclick="clearGroupFilter()">✕ Limpiar filtro</button>
 </div>
 
 <div class="stats" id="stats"></div>
@@ -338,10 +444,11 @@ function classify(a) {
   return "idipron";
 }
 
-function buildAggregated(filter) {
+function buildAggregated(typeFilter, groupFilter) {
   const dm = {};
   RAW.forEach(r => {
-    if (filter !== "all" && classify(r.activity) !== filter) return;
+    if (typeFilter !== "all" && classify(r.activity) !== typeFilter) return;
+    if (groupFilter.length && !groupFilter.includes(r.group)) return;
     if (!dm[r.date]) dm[r.date] = {};
     if (!dm[r.date][r.activity]) dm[r.date][r.activity] = {activity:r.activity, date:r.date, groups:[], detail:[]};
     dm[r.date][r.activity].groups.push(r.group);
@@ -353,17 +460,92 @@ function buildAggregated(filter) {
 }
 
 let activeFilter = "all";
+let activeGroups = []; // empty = all groups
 let currentView  = "list";
-let calMonth     = 4; // 0-indexed May
+let calMonth     = 4;
+
+const ALL_GROUPS = [...new Set(RAW.map(r => r.group))].sort((a,b) => a.localeCompare(b, "es"));
+
+// Group filter UI
+function initGroupFilter() { renderGroupOptions(""); }
+
+function renderGroupOptions(search) {
+  const container = document.getElementById("group-options");
+  const q = search.toLowerCase();
+  const filtered = ALL_GROUPS.filter(g => g.toLowerCase().includes(q));
+  let html = `<div class="group-option all-option" onclick="toggleAllGroups()">
+    <input type="checkbox" ${activeGroups.length===0?"checked":""} readonly> Todos los grupos
+  </div>`;
+  filtered.forEach(g => {
+    const checked = activeGroups.includes(g);
+    html += `<div class="group-option" onclick="toggleGroup(${JSON.stringify(g)})">
+      <input type="checkbox" ${checked?"checked":""} readonly> ${g}
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function filterGroupOptions() { renderGroupOptions(document.getElementById("group-search").value); }
+
+function toggleGroupDropdown(e) {
+  e.stopPropagation();
+  const btn = document.getElementById("group-select-btn");
+  const dd  = document.getElementById("group-dropdown");
+  const open = dd.classList.contains("open");
+  dd.classList.toggle("open", !open);
+  btn.classList.toggle("open", !open);
+  if (!open) setTimeout(() => document.getElementById("group-search").focus(), 50);
+}
+
+function toggleAllGroups() { activeGroups = []; updateGroupUI(); refresh(); }
+
+function toggleGroup(g) {
+  const idx = activeGroups.indexOf(g);
+  if (idx === -1) activeGroups.push(g); else activeGroups.splice(idx, 1);
+  updateGroupUI(); refresh();
+}
+
+function clearGroupFilter() { activeGroups = []; updateGroupUI(); refresh(); }
+
+function updateGroupUI() {
+  const btn   = document.getElementById("group-select-btn");
+  const label = document.getElementById("group-btn-label");
+  const clear = document.getElementById("group-clear-btn");
+  if (activeGroups.length === 0) {
+    label.textContent = "Todos los grupos";
+    btn.classList.remove("has-selection");
+    clear.classList.remove("visible");
+  } else if (activeGroups.length === 1) {
+    label.textContent = activeGroups[0];
+    btn.classList.add("has-selection"); clear.classList.add("visible");
+  } else {
+    label.textContent = `${activeGroups.length} grupos seleccionados`;
+    btn.classList.add("has-selection"); clear.classList.add("visible");
+  }
+  renderGroupOptions(document.getElementById("group-search").value);
+}
+
+document.addEventListener("click", e => {
+  const dd  = document.getElementById("group-dropdown");
+  const btn = document.getElementById("group-select-btn");
+  if (!dd.contains(e.target) && !btn.contains(e.target)) {
+    dd.classList.remove("open"); btn.classList.remove("open");
+  }
+});
+
+function refresh() { renderStats(); currentView === "list" ? renderList() : renderCalendar(); }
 
 // Stats
 function renderStats() {
-  const i = RAW.filter(e=>classify(e.activity)==="idipron").length;
-  const s = RAW.filter(e=>classify(e.activity)==="share").length;
-  const b = RAW.filter(e=>classify(e.activity)==="bienvenida").length;
+  const filtered = activeGroups.length ? RAW.filter(r => activeGroups.includes(r.group)) : RAW;
+  const filt2 = activeFilter !== "all" ? filtered.filter(r => classify(r.activity) === activeFilter) : filtered;
+  const i = filt2.filter(e=>classify(e.activity)==="idipron").length;
+  const s = filt2.filter(e=>classify(e.activity)==="share").length;
+  const b = filt2.filter(e=>classify(e.activity)==="bienvenida").length;
+  const g = activeGroups.length || 14;
   document.getElementById("stats").innerHTML =
-    `<div class="stat-pill"><strong>${RAW.length}</strong> entradas totales</div>
-     <div class="stat-pill"><strong>14</strong> grupos</div>
+    `<div class="stat-pill"><strong>${filt2.length}</strong> entradas${(activeGroups.length||activeFilter!=="all")?" (filtrado)":""}</div>
+     <div class="stat-pill"><strong>${g}</strong> grupo${g!==1?"s":""}</div>
      <div class="stat-pill"><strong>${i}</strong> visitas IDIPRON</div>
      <div class="stat-pill"><strong>${s}</strong> activaciones SHARE</div>
      <div class="stat-pill"><strong>${b}</strong> bienvenidas</div>`;
@@ -381,7 +563,7 @@ function setView(v) {
 
 // LIST
 function renderList() {
-  const agg  = buildAggregated(activeFilter);
+  const agg  = buildAggregated(activeFilter, activeGroups);
   const grid = document.getElementById("list-view");
   grid.innerHTML = "";
   for (let m = 4; m <= 11; m++) {
@@ -424,7 +606,7 @@ function calNav(dir) {
 }
 
 function renderCalendar() {
-  const agg = buildAggregated(activeFilter);
+  const agg = buildAggregated(activeFilter, activeGroups);
   const m = calMonth, y = 2026;
 
   document.getElementById("cal-prev").disabled = m <= 4;
@@ -551,12 +733,12 @@ function renderMonthPanel(monthEvs) {
 }
 
 function openByRef(ref) {
-  const agg = buildAggregated(activeFilter);
+  const agg = buildAggregated(activeFilter, activeGroups);
   const ev  = (agg[ref.date]||[]).find(e => e.activity === ref.activity);
   if (ev) openModal(ev);
 }
 window.openByRef = function(ref) {
-  const agg = buildAggregated(activeFilter);
+  const agg = buildAggregated(activeFilter, activeGroups);
   const ev  = (agg[ref.date]||[]).find(e => e.activity === ref.activity);
   if (ev) openModal(ev);
 };
@@ -597,10 +779,12 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
     document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     activeFilter = btn.dataset.filter;
+    renderStats();
     currentView==="list" ? renderList() : renderCalendar();
   });
 });
 
+initGroupFilter();
 renderStats();
 renderList();
 </script>
